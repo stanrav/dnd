@@ -6,10 +6,14 @@ require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$workspaceId = dnd_require_workspace($pdo);
 
 if ($method === 'GET') {
-    $rows = $pdo->query('SELECT id, name, sort_order FROM characters ORDER BY sort_order ASC, id ASC')->fetchAll();
-    dnd_json_response($rows);
+    $stmt = $pdo->prepare(
+        'SELECT id, name, sort_order FROM characters WHERE workspace_id = ? ORDER BY sort_order ASC, id ASC'
+    );
+    $stmt->execute([$workspaceId]);
+    dnd_json_response($stmt->fetchAll());
 }
 
 if ($method === 'POST') {
@@ -20,9 +24,15 @@ if ($method === 'POST') {
         dnd_json_response(['error' => 'Naam is verplicht.'], 400);
     }
 
-    $nextSort = (int) $pdo->query('SELECT COALESCE(MAX(sort_order), 0) FROM characters')->fetchColumn() + 1;
-    $stmt = $pdo->prepare('INSERT INTO characters (name, sort_order) VALUES (?, ?)');
-    $stmt->execute([$name, $nextSort]);
+    $nextStmt = $pdo->prepare(
+        'SELECT COALESCE(MAX(sort_order), 0) FROM characters WHERE workspace_id = ?'
+    );
+    $nextStmt->execute([$workspaceId]);
+    $nextSort = (int) $nextStmt->fetchColumn() + 1;
+    $stmt = $pdo->prepare(
+        'INSERT INTO characters (name, sort_order, workspace_id) VALUES (?, ?, ?)'
+    );
+    $stmt->execute([$name, $nextSort, $workspaceId]);
     $id = (int) $pdo->lastInsertId();
     dnd_json_response(['id' => $id]);
 }

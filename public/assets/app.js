@@ -2,6 +2,42 @@
     'use strict';
 
     const apiBase = new URL('api/', window.location.href).href;
+    const WORKSPACE_STORAGE_KEY = 'dnd_workspace_secret';
+
+    function getWorkspaceSecret() {
+        try {
+            return localStorage.getItem(WORKSPACE_STORAGE_KEY) || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function setWorkspaceSecret(secret) {
+        try {
+            localStorage.setItem(WORKSPACE_STORAGE_KEY, secret);
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    (function importWorkspaceSecretFromUrl() {
+        try {
+            const u = new URL(window.location.href);
+            const w = u.searchParams.get('w');
+
+            if (!w || !w.trim()) {
+                return;
+            }
+
+            setWorkspaceSecret(w.trim());
+            u.searchParams.delete('w');
+            const q = u.searchParams.toString();
+            const next = u.pathname + u.hash + (q ? '?' + q : '');
+            window.history.replaceState(null, '', next);
+        } catch (e) {
+            /* ignore */
+        }
+    })();
 
     function toast(msg, isError) {
         const el = document.getElementById('toast');
@@ -27,8 +63,53 @@
         return d.innerHTML;
     }
 
+    async function ensureWorkspaceReady() {
+        let secret = getWorkspaceSecret();
+
+        if (secret) {
+            const check = await fetch(apiBase + 'workspace.php', {
+                method: 'GET',
+                headers: { 'X-Workspace-Secret': secret },
+            });
+
+            if (check.ok) {
+                return;
+            }
+
+            setWorkspaceSecret('');
+            secret = '';
+        }
+
+        const res = await fetch(apiBase + 'workspace.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+        });
+        let data = {};
+
+        try {
+            data = await res.json();
+        } catch (e) {
+            data = {};
+        }
+
+        if (!res.ok || !data.secret) {
+            throw new Error(data.error || 'Workspace aanmaken mislukt.');
+        }
+
+        setWorkspaceSecret(String(data.secret));
+    }
+
     async function fetchJson(url, options) {
-        const res = await fetch(url, options);
+        options = options || {};
+        const headers = new Headers(options.headers || {});
+        const secret = getWorkspaceSecret();
+
+        if (secret) {
+            headers.set('X-Workspace-Secret', secret);
+        }
+
+        const res = await fetch(url, Object.assign({}, options, { headers: headers }));
         let data = {};
 
         try {
@@ -1177,9 +1258,31 @@
     function initSettings() {
         const root = document.getElementById('settings-root');
         const charSelect = document.getElementById('settings-char-select');
+        const copyLinkBtn = document.getElementById('btn-workspace-copy-link');
 
         if (!root || !charSelect) {
             return;
+        }
+
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', async function () {
+                const secret = getWorkspaceSecret();
+
+                if (!secret) {
+                    DndApp.toast('Geen workspace — ververs de pagina.', true);
+                    return;
+                }
+
+                const link = new URL('index.php', window.location.href);
+                link.searchParams.set('w', secret);
+
+                try {
+                    await navigator.clipboard.writeText(link.href);
+                    DndApp.toast('Link gekopieerd.');
+                } catch (e) {
+                    DndApp.toast('Kopiëren mislukt. Kopieer handmatig uit de adresbalk.', true);
+                }
+            });
         }
 
         function selectedCharacterId() {
@@ -1616,7 +1719,14 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            await ensureWorkspaceReady();
+        } catch (e) {
+            toast(e.message, true);
+            return;
+        }
+
         initSiteNav();
 
         const id = document.body.id;

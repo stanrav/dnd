@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
+$workspaceId = dnd_require_workspace($pdo);
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     dnd_json_response(['error' => 'Methode niet toegestaan.'], 405);
@@ -16,6 +17,8 @@ $id = (int) ($in['id'] ?? 0);
 if ($id < 1) {
     dnd_json_response(['error' => 'Ongeldig id.'], 400);
 }
+
+dnd_assert_stat_in_workspace($pdo, $id, $workspaceId);
 
 $name = trim((string) ($in['name'] ?? ''));
 

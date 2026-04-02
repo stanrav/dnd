@@ -6,6 +6,7 @@ require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$workspaceId = dnd_require_workspace($pdo);
 
 if ($method === 'GET') {
     $characterId = isset($_GET['character_id']) ? (int) $_GET['character_id'] : 0;
@@ -14,12 +15,7 @@ if ($method === 'GET') {
         dnd_json_response(['error' => 'character_id is verplicht.'], 400);
     }
 
-    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
-    $check->execute([$characterId]);
-
-    if ($check->fetchColumn() === false) {
-        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
-    }
+    dnd_assert_character_in_workspace($pdo, $characterId, $workspaceId);
 
     $stmt = $pdo->prepare('SELECT * FROM stats WHERE character_id = ? ORDER BY sort_order ASC, id ASC');
     $stmt->execute([$characterId]);
@@ -58,12 +54,7 @@ if ($method === 'POST') {
         dnd_json_response(['error' => 'character_id is verplicht.'], 400);
     }
 
-    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
-    $check->execute([$characterId]);
-
-    if ($check->fetchColumn() === false) {
-        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
-    }
+    dnd_assert_character_in_workspace($pdo, $characterId, $workspaceId);
 
     $nextSortStmt = $pdo->prepare('SELECT COALESCE(MAX(sort_order), 0) FROM stats WHERE character_id = ?');
     $nextSortStmt->execute([$characterId]);

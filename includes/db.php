@@ -43,6 +43,7 @@ SQL);
 
         dnd_migrate_stats_sort_order($pdo);
         dnd_migrate_characters($pdo);
+        dnd_migrate_workspaces($pdo);
     }
 
     return $pdo;
@@ -102,4 +103,39 @@ SQL);
     $firstId = (int) $pdo->query('SELECT id FROM characters ORDER BY sort_order ASC, id ASC LIMIT 1')->fetchColumn();
     $upd = $pdo->prepare('UPDATE stats SET character_id = ?');
     $upd->execute([$firstId]);
+}
+
+function dnd_migrate_workspaces(PDO $pdo): void
+{
+    $pdo->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS workspaces (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    secret TEXT NOT NULL UNIQUE
+);
+SQL);
+
+    $charCols = $pdo->query('PRAGMA table_info(characters)')->fetchAll(PDO::FETCH_ASSOC);
+    $hasWorkspaceId = false;
+
+    foreach ($charCols as $col) {
+        if (($col['name'] ?? '') === 'workspace_id') {
+            $hasWorkspaceId = true;
+            break;
+        }
+    }
+
+    if ($hasWorkspaceId) {
+        return;
+    }
+
+    $wsCount = (int) $pdo->query('SELECT COUNT(*) FROM workspaces')->fetchColumn();
+
+    if ($wsCount === 0) {
+        $secret = bin2hex(random_bytes(32));
+        $ins = $pdo->prepare('INSERT INTO workspaces (secret) VALUES (?)');
+        $ins->execute([$secret]);
+    }
+
+    $wid = (int) $pdo->query('SELECT id FROM workspaces ORDER BY id ASC LIMIT 1')->fetchColumn();
+    $pdo->exec('ALTER TABLE characters ADD COLUMN workspace_id INTEGER NOT NULL DEFAULT ' . $wid);
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
+$workspaceId = dnd_require_workspace($pdo);
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     dnd_json_response(['error' => 'Methode niet toegestaan.'], 405);
@@ -18,12 +19,7 @@ if ($characterId < 1) {
     dnd_json_response(['error' => 'character_id is verplicht.'], 400);
 }
 
-$check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
-$check->execute([$characterId]);
-
-if ($check->fetchColumn() === false) {
-    dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
-}
+dnd_assert_character_in_workspace($pdo, $characterId, $workspaceId);
 
 if (!is_array($ids) || $ids === []) {
     dnd_json_response(['error' => 'ids moet een niet-lege array zijn.'], 400);

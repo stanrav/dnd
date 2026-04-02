@@ -6,6 +6,7 @@ require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$workspaceId = dnd_require_workspace($pdo);
 
 if ($method === 'DELETE') {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -14,23 +15,20 @@ if ($method === 'DELETE') {
         dnd_json_response(['error' => 'Ongeldig id.'], 400);
     }
 
-    $total = (int) $pdo->query('SELECT COUNT(*) FROM characters')->fetchColumn();
+    $totalStmt = $pdo->prepare('SELECT COUNT(*) FROM characters WHERE workspace_id = ?');
+    $totalStmt->execute([$workspaceId]);
+    $total = (int) $totalStmt->fetchColumn();
 
     if ($total < 2) {
         dnd_json_response(['error' => 'Je moet minimaal één personage houden.'], 400);
     }
 
-    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
-    $check->execute([$id]);
-
-    if ($check->fetchColumn() === false) {
-        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
-    }
+    dnd_assert_character_in_workspace($pdo, $id, $workspaceId);
 
     $delStats = $pdo->prepare('DELETE FROM stats WHERE character_id = ?');
     $delStats->execute([$id]);
-    $delChar = $pdo->prepare('DELETE FROM characters WHERE id = ?');
-    $delChar->execute([$id]);
+    $delChar = $pdo->prepare('DELETE FROM characters WHERE id = ? AND workspace_id = ?');
+    $delChar->execute([$id, $workspaceId]);
     dnd_json_response(['ok' => true]);
 }
 
@@ -43,15 +41,10 @@ if ($method === 'POST') {
         dnd_json_response(['error' => 'Ongeldige aanvraag.'], 400);
     }
 
-    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
-    $check->execute([$id]);
+    dnd_assert_character_in_workspace($pdo, $id, $workspaceId);
 
-    if ($check->fetchColumn() === false) {
-        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
-    }
-
-    $stmt = $pdo->prepare('UPDATE characters SET name = ? WHERE id = ?');
-    $stmt->execute([$name, $id]);
+    $stmt = $pdo->prepare('UPDATE characters SET name = ? WHERE id = ? AND workspace_id = ?');
+    $stmt->execute([$name, $id, $workspaceId]);
     dnd_json_response(['ok' => true]);
 }
 

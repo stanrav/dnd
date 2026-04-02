@@ -6,6 +6,7 @@ require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 
 $pdo = dnd_pdo();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$workspaceId = dnd_require_workspace($pdo);
 
 if ($method === 'DELETE') {
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -13,6 +14,8 @@ if ($method === 'DELETE') {
     if ($id < 1) {
         dnd_json_response(['error' => 'Ongeldig id.'], 400);
     }
+
+    dnd_assert_stat_in_workspace($pdo, $id, $workspaceId);
 
     $stmt = $pdo->prepare('DELETE FROM stats WHERE id = ?');
     $stmt->execute([$id]);
@@ -26,6 +29,8 @@ if ($method === 'POST') {
     if ($id < 1) {
         dnd_json_response(['error' => 'Ongeldig id.'], 400);
     }
+
+    dnd_assert_stat_in_workspace($pdo, $id, $workspaceId);
 
     $sel = $pdo->prepare('SELECT max, current FROM stats WHERE id = ?');
     $sel->execute([$id]);
