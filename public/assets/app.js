@@ -101,6 +101,51 @@
         });
     }
 
+    async function moveStatOrderStep(id, dir) {
+        return fetchJson(apiBase + 'stat-order-move.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, dir: dir }),
+        });
+    }
+
+    function buildReorderCluster(id) {
+        const wrap = document.createElement('div');
+        wrap.className = 'item-reorder';
+
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.draggable = true;
+        handle.setAttribute('role', 'button');
+        handle.setAttribute('tabindex', '0');
+        handle.setAttribute('aria-label', 'Sleep om te sorteren');
+        handle.title = 'Sleep om te sorteren';
+
+        const touch = document.createElement('div');
+        touch.className = 'reorder-touch';
+
+        const btnUp = document.createElement('button');
+        btnUp.type = 'button';
+        btnUp.className = 'btn reorder-btn';
+        btnUp.setAttribute('data-sort-up', String(id));
+        btnUp.setAttribute('aria-label', 'Een plek omhoog');
+        btnUp.textContent = '↑';
+
+        const btnDown = document.createElement('button');
+        btnDown.type = 'button';
+        btnDown.className = 'btn reorder-btn';
+        btnDown.setAttribute('data-sort-down', String(id));
+        btnDown.setAttribute('aria-label', 'Een plek omlaag');
+        btnDown.textContent = '↓';
+
+        touch.appendChild(btnUp);
+        touch.appendChild(btnDown);
+        wrap.appendChild(handle);
+        wrap.appendChild(touch);
+
+        return wrap;
+    }
+
     function bindSortableContainer(container, opts) {
         const rowSelector = opts.rowSelector || '[data-stat-id]';
         const isRowDraggable = opts.isRowDraggable || function () {
@@ -190,6 +235,7 @@
         saveRules: saveRules,
         doRest: doRest,
         saveStatOrder: saveStatOrder,
+        moveStatOrderStep: moveStatOrderStep,
     };
 
     function initPlay() {
@@ -218,20 +264,12 @@
                 const head = document.createElement('div');
                 head.className = 'stat-card__head';
 
-                const handle = document.createElement('span');
-                handle.className = 'drag-handle';
-                handle.draggable = true;
-                handle.setAttribute('role', 'button');
-                handle.setAttribute('tabindex', '0');
-                handle.setAttribute('aria-label', 'Sleep om te sorteren');
-                handle.title = 'Sleep om te sorteren';
-
                 const title = document.createElement('h2');
                 title.className = 'stat-card__name';
                 title.textContent = s.name;
 
-                head.appendChild(handle);
                 head.appendChild(title);
+                head.appendChild(buildReorderCluster(s.id));
 
                 const values = document.createElement('div');
                 values.className = 'stat-card__values';
@@ -288,6 +326,36 @@
         }
 
         root.addEventListener('click', async function (ev) {
+            const sortUp = ev.target.closest('[data-sort-up]');
+
+            if (sortUp && root.contains(sortUp)) {
+                const id = parseInt(sortUp.getAttribute('data-sort-up'), 10);
+
+                try {
+                    await moveStatOrderStep(id, 'up');
+                    await load();
+                } catch (e) {
+                    DndApp.toast(e.message, true);
+                }
+
+                return;
+            }
+
+            const sortDown = ev.target.closest('[data-sort-down]');
+
+            if (sortDown && root.contains(sortDown)) {
+                const id = parseInt(sortDown.getAttribute('data-sort-down'), 10);
+
+                try {
+                    await moveStatOrderStep(id, 'down');
+                    await load();
+                } catch (e) {
+                    DndApp.toast(e.message, true);
+                }
+
+                return;
+            }
+
             const btn = ev.target.closest('button[data-delta]');
 
             if (!btn || !root.contains(btn)) {
@@ -413,9 +481,12 @@
                         ? ' · ' + restBits.join(' ')
                         : ' · <span class="manage-row__tag manage-row__tag--none">geen auto-reset</span>';
 
-                row.innerHTML =
-                    '<span class="drag-handle" draggable="true" role="button" tabindex="0" aria-label="Sleep om te sorteren" title="Sleep om te sorteren"></span>' +
-                    '<div class="manage-row__main">' +
+                const top = document.createElement('div');
+                top.className = 'manage-row__top';
+
+                const main = document.createElement('div');
+                main.className = 'manage-row__main';
+                main.innerHTML =
                     '<span class="manage-row__name">' +
                     escapeHtml(s.name) +
                     '</span>' +
@@ -424,15 +495,23 @@
                     ' · max ' +
                     escapeHtml(String(s.max)) +
                     restHtml +
-                    '</span></div>' +
-                    '<div class="manage-row__btns">' +
+                    '</span>';
+
+                top.appendChild(main);
+                top.appendChild(buildReorderCluster(id));
+
+                const btns = document.createElement('div');
+                btns.className = 'manage-row__btns';
+                btns.innerHTML =
                     '<button type="button" class="btn btn--small manage-row__edit" data-edit="' +
                     id +
                     '">Bewerken</button>' +
                     '<button type="button" class="btn btn--danger btn--small manage-row__del" data-delete="' +
                     id +
-                    '">Verwijderen</button></div>';
+                    '">Verwijderen</button>';
 
+                row.appendChild(top);
+                row.appendChild(btns);
                 list.appendChild(row);
             });
         }
@@ -572,6 +651,36 @@
         });
 
         list.addEventListener('click', async function (ev) {
+            const sortUp = ev.target.closest('[data-sort-up]');
+
+            if (sortUp && list.contains(sortUp)) {
+                const id = parseInt(sortUp.getAttribute('data-sort-up'), 10);
+
+                try {
+                    await moveStatOrderStep(id, 'up');
+                    await renderList();
+                } catch (e) {
+                    DndApp.toast(e.message, true);
+                }
+
+                return;
+            }
+
+            const sortDown = ev.target.closest('[data-sort-down]');
+
+            if (sortDown && list.contains(sortDown)) {
+                const id = parseInt(sortDown.getAttribute('data-sort-down'), 10);
+
+                try {
+                    await moveStatOrderStep(id, 'down');
+                    await renderList();
+                } catch (e) {
+                    DndApp.toast(e.message, true);
+                }
+
+                return;
+            }
+
             const editBtn = ev.target.closest('[data-edit]');
 
             if (editBtn && list.contains(editBtn)) {

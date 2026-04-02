@@ -9,7 +9,7 @@ require __DIR__ . '/../includes/partials/header.php';
 
 <main>
     <h1 class="page-title">Stats aanmaken</h1>
-    <p class="page-intro">Geef elke stat een naam en een maximum. Huidige waarde start gelijk aan max. Kies meteen of short/long rest deze stat naar max zet. Onderaan kun je bestaande stats bewerken of verwijderen. Sleep met het grip-icoon om de volgorde te wijzigen (zelfde volgorde als op de speelpagina).</p>
+    <p class="page-intro">Geef elke stat een naam en een maximum. Huidige waarde start gelijk aan max. Kies meteen of short/long rest deze stat naar max zet. Onderaan kun je bestaande stats bewerken of verwijderen.</p>
 
     <form id="form-new-stat" class="form-stack">
         <label>

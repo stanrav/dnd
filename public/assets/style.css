@@ -210,6 +210,7 @@ main {
 
 .stat-card__head {
     display: flex;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
@@ -262,6 +263,40 @@ main {
 
 .is-dragging {
     opacity: 0.55;
+}
+
+.item-reorder {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.reorder-touch {
+    display: none;
+    flex-direction: row;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+.reorder-btn {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    padding: 0.25rem 0.45rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .item-reorder .drag-handle {
+        display: none !important;
+    }
+
+    .reorder-touch {
+        display: flex;
+    }
 }
 
 .stat-card__values {
@@ -399,56 +434,44 @@ main {
 }
 
 .manage-row {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-        "grip main"
-        "btns btns";
-    align-items: start;
-    column-gap: 0.65rem;
-    row-gap: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
     padding: 0.85rem 1rem;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
 }
 
-.manage-row > .drag-handle {
-    grid-area: grip;
-    align-self: start;
-    margin-top: 0.2rem;
+.manage-row__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.65rem;
+    width: 100%;
 }
 
-.manage-row > .manage-row__main {
-    grid-area: main;
+.manage-row__top .manage-row__main {
+    flex: 1 1 auto;
     min-width: 0;
-}
-
-.manage-row > .manage-row__btns {
-    grid-area: btns;
 }
 
 @media (min-width: 520px) {
     .manage-row:not(.manage-row--edit) {
-        display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
         align-items: center;
-        gap: 0.75rem;
     }
 
-    .manage-row:not(.manage-row--edit) > .drag-handle {
-        margin-top: 0;
-        align-self: center;
-    }
-
-    .manage-row:not(.manage-row--edit) > .manage-row__main {
+    .manage-row:not(.manage-row--edit) .manage-row__top {
         flex: 1 1 auto;
+        min-width: 0;
     }
 
-    .manage-row:not(.manage-row--edit) > .manage-row__btns {
+    .manage-row:not(.manage-row--edit) .manage-row__btns {
         flex: 0 0 auto;
         width: auto;
+        align-self: center;
     }
 }
 
