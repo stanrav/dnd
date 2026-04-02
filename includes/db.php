@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS stats (
 SQL);
 
         dnd_migrate_stats_sort_order($pdo);
+        dnd_migrate_characters($pdo);
     }
 
     return $pdo;
@@ -65,4 +66,40 @@ function dnd_migrate_stats_sort_order(PDO $pdo): void
 
     $pdo->exec('ALTER TABLE stats ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0');
     $pdo->exec('UPDATE stats SET sort_order = id');
+}
+
+function dnd_migrate_characters(PDO $pdo): void
+{
+    $pdo->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS characters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0
+);
+SQL);
+
+    $count = (int) $pdo->query('SELECT COUNT(*) FROM characters')->fetchColumn();
+
+    if ($count === 0) {
+        $pdo->exec("INSERT INTO characters (name, sort_order) VALUES ('Personage', 1)");
+    }
+
+    $cols = $pdo->query('PRAGMA table_info(stats)')->fetchAll(PDO::FETCH_ASSOC);
+    $hasCharacterId = false;
+
+    foreach ($cols as $col) {
+        if (($col['name'] ?? '') === 'character_id') {
+            $hasCharacterId = true;
+            break;
+        }
+    }
+
+    if ($hasCharacterId) {
+        return;
+    }
+
+    $pdo->exec('ALTER TABLE stats ADD COLUMN character_id INTEGER NOT NULL DEFAULT 1');
+    $firstId = (int) $pdo->query('SELECT id FROM characters ORDER BY sort_order ASC, id ASC LIMIT 1')->fetchColumn();
+    $upd = $pdo->prepare('UPDATE stats SET character_id = ?');
+    $upd->execute([$firstId]);
 }

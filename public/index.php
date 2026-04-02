@@ -15,7 +15,15 @@ require __DIR__ . '/../includes/partials/header.php';
         <button type="button" class="btn btn--primary" id="btn-long-rest">Long rest</button>
     </div>
 
-    <div id="play-root" aria-live="polite"></div>
+    <div id="play-char-shell" class="char-shell">
+        <div class="char-tabs-wrap">
+            <div id="char-tabs" class="char-tabs" role="tablist" aria-label="Personages"></div>
+        </div>
+        <p class="char-swipe-hint" id="char-swipe-hint" hidden>Veeg horizontaal om van personage te wisselen.</p>
+        <div id="char-viewport" class="char-viewport" tabindex="0" aria-roledescription="carousel" aria-label="Personage">
+            <div id="char-track" class="char-track"></div>
+        </div>
+    </div>
 </main>
 
 <?php require __DIR__ . '/../includes/partials/footer.php'; ?>

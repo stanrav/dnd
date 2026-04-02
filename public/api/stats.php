@@ -8,8 +8,22 @@ $pdo = dnd_pdo();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
-    $rows = $pdo->query('SELECT * FROM stats ORDER BY sort_order ASC, id ASC')->fetchAll();
-    dnd_json_response($rows);
+    $characterId = isset($_GET['character_id']) ? (int) $_GET['character_id'] : 0;
+
+    if ($characterId < 1) {
+        dnd_json_response(['error' => 'character_id is verplicht.'], 400);
+    }
+
+    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
+    $check->execute([$characterId]);
+
+    if ($check->fetchColumn() === false) {
+        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
+    }
+
+    $stmt = $pdo->prepare('SELECT * FROM stats WHERE character_id = ? ORDER BY sort_order ASC, id ASC');
+    $stmt->execute([$characterId]);
+    dnd_json_response($stmt->fetchAll());
 }
 
 if ($method === 'POST') {
@@ -38,13 +52,27 @@ if ($method === 'POST') {
 
     $resetShort = !empty($in['reset_on_short']) ? 1 : 0;
     $resetLong = !empty($in['reset_on_long']) ? 1 : 0;
+    $characterId = (int) ($in['character_id'] ?? 0);
 
-    $nextSort = (int) $pdo->query('SELECT COALESCE(MAX(sort_order), 0) FROM stats')->fetchColumn() + 1;
+    if ($characterId < 1) {
+        dnd_json_response(['error' => 'character_id is verplicht.'], 400);
+    }
+
+    $check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
+    $check->execute([$characterId]);
+
+    if ($check->fetchColumn() === false) {
+        dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
+    }
+
+    $nextSortStmt = $pdo->prepare('SELECT COALESCE(MAX(sort_order), 0) FROM stats WHERE character_id = ?');
+    $nextSortStmt->execute([$characterId]);
+    $nextSort = (int) $nextSortStmt->fetchColumn() + 1;
 
     $stmt = $pdo->prepare(
-        'INSERT INTO stats (name, current, max, reset_on_short, reset_on_long, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT INTO stats (name, current, max, reset_on_short, reset_on_long, sort_order, character_id) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$name, $current, $max, $resetShort, $resetLong, $nextSort]);
+    $stmt->execute([$name, $current, $max, $resetShort, $resetLong, $nextSort, $characterId]);
     $id = (int) $pdo->lastInsertId();
     dnd_json_response(['id' => $id]);
 }

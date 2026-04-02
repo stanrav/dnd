@@ -12,14 +12,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 $in = dnd_json_input();
 $kind = (string) ($in['kind'] ?? '');
+$characterId = (int) ($in['character_id'] ?? 0);
+
+if ($characterId < 1) {
+    dnd_json_response(['error' => 'character_id is verplicht.'], 400);
+}
+
+$check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
+$check->execute([$characterId]);
+
+if ($check->fetchColumn() === false) {
+    dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
+}
 
 if ($kind === 'short') {
-    $pdo->exec('UPDATE stats SET current = max WHERE reset_on_short = 1');
+    $stmt = $pdo->prepare('UPDATE stats SET current = max WHERE reset_on_short = 1 AND character_id = ?');
+    $stmt->execute([$characterId]);
     dnd_json_response(['ok' => true]);
 }
 
 if ($kind === 'long') {
-    $pdo->exec('UPDATE stats SET current = max WHERE reset_on_long = 1');
+    $stmt = $pdo->prepare('UPDATE stats SET current = max WHERE reset_on_long = 1 AND character_id = ?');
+    $stmt->execute([$characterId]);
     dnd_json_response(['ok' => true]);
 }
 

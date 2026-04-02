@@ -22,6 +22,7 @@ $bodyId = $bodyId ?? '';
         <nav class="nav">
             <a href="index.php">Spelen</a>
             <a href="manage.php">Stats aanmaken</a>
+            <a href="characters.php">Personages</a>
             <a href="settings.php">Instellingen</a>
         </nav>
     </header>

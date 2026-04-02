@@ -13,12 +13,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 $in = dnd_json_input();
 $id = (int) ($in['id'] ?? 0);
 $dir = (string) ($in['dir'] ?? '');
+$characterId = (int) ($in['character_id'] ?? 0);
 
-if ($id < 1 || !in_array($dir, ['up', 'down'], true)) {
+if ($id < 1 || !in_array($dir, ['up', 'down'], true) || $characterId < 1) {
     dnd_json_response(['error' => 'Ongeldige aanvraag.'], 400);
 }
 
-$rows = $pdo->query('SELECT id FROM stats ORDER BY sort_order ASC, id ASC')->fetchAll(PDO::FETCH_COLUMN);
+$check = $pdo->prepare('SELECT 1 FROM characters WHERE id = ?');
+$check->execute([$characterId]);
+
+if ($check->fetchColumn() === false) {
+    dnd_json_response(['error' => 'Personage niet gevonden.'], 404);
+}
+
+$stmt = $pdo->prepare('SELECT id FROM stats WHERE character_id = ? ORDER BY sort_order ASC, id ASC');
+$stmt->execute([$characterId]);
+$rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
 $rows = array_map('intval', $rows);
 $idx = array_search($id, $rows, true);
 

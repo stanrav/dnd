@@ -9,6 +9,15 @@ require __DIR__ . '/../includes/partials/header.php';
 
 <main>
     <h1 class="page-title">Stats aanmaken</h1>
+
+    <div class="char-picker-bar">
+        <label class="char-picker">
+            <span class="char-picker__label">Personage</span>
+            <select id="manage-char-select" class="char-picker__select" aria-label="Kies personage"></select>
+        </label>
+        <a href="characters.php" class="char-picker__link">Personages beheren</a>
+    </div>
+
     <p class="page-intro">Geef elke stat een naam en een maximum. Huidige waarde start gelijk aan max. Kies meteen of short/long rest deze stat naar max zet. Onderaan kun je bestaande stats bewerken of verwijderen.</p>
 
     <form id="form-new-stat" class="form-stack">
