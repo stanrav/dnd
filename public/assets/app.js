@@ -109,7 +109,7 @@
         });
     }
 
-    function buildReorderCluster(id) {
+    function buildReorderCluster(id, valueBetweenEl) {
         const wrap = document.createElement('div');
         wrap.className = 'item-reorder';
 
@@ -139,6 +139,11 @@
         btnDown.textContent = '↓';
 
         touch.appendChild(btnUp);
+
+        if (valueBetweenEl) {
+            touch.appendChild(valueBetweenEl);
+        }
+
         touch.appendChild(btnDown);
         wrap.appendChild(handle);
         wrap.appendChild(touch);
@@ -268,12 +273,7 @@
                 title.className = 'stat-card__name';
                 title.textContent = s.name;
 
-                head.appendChild(title);
-                head.appendChild(buildReorderCluster(s.id));
-
-                const values = document.createElement('div');
-                values.className = 'stat-card__values';
-                values.innerHTML =
+                const valuesHtml =
                     '<span class="stat-card__current">' +
                     escapeHtml(String(s.current)) +
                     '</span>' +
@@ -281,6 +281,14 @@
                     '<span class="stat-card__max">' +
                     escapeHtml(String(s.max)) +
                     '</span>';
+
+                const valuesEl = document.createElement('div');
+                valuesEl.className = 'stat-card__values stat-card__values--center';
+                valuesEl.innerHTML = valuesHtml;
+
+                head.appendChild(title);
+                head.appendChild(valuesEl);
+                head.appendChild(buildReorderCluster(s.id));
 
                 const bar = document.createElement('div');
                 bar.className = 'stat-card__bar';
@@ -293,7 +301,7 @@
                 const actions = document.createElement('div');
                 actions.className = 'stat-card__actions';
 
-                [[-5, '-5'], [-1, '-1'], [1, '+1'], [5, '+5']].forEach(function (pair) {
+                [[-10, '-10'], [-5, '-5'], [-1, '-1'], [1, '+1'], [5, '+5'], [10, '+10']].forEach(function (pair) {
                     const b = document.createElement('button');
                     b.type = 'button';
                     b.className = 'btn btn--small';
@@ -303,7 +311,6 @@
                 });
 
                 card.appendChild(head);
-                card.appendChild(values);
                 card.appendChild(bar);
                 card.appendChild(actions);
                 root.appendChild(card);
