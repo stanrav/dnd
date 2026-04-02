@@ -319,10 +319,13 @@ main {
     overflow: hidden;
     border-radius: 6px;
     outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.char-viewport:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent-dim);
+@media (hover: hover) and (pointer: fine) {
+    .char-viewport:focus-visible {
+        box-shadow: 0 0 0 2px var(--accent-dim);
+    }
 }
 
 .char-track {
