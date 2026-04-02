@@ -11,9 +11,9 @@ $bodyId = $bodyId ?? '';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#141210">
-    <meta name="application-name" content="Sessie">
+    <meta name="application-name" content="D&D Stats">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Sessie">
+    <meta name="apple-mobile-web-app-title" content="D&D Stats">
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="manifest" href="site.webmanifest">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
@@ -28,7 +28,7 @@ $bodyId = $bodyId ?? '';
 <body<?= $bodyId !== '' ? ' id="' . htmlspecialchars($bodyId, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
     <header class="site-header">
         <div class="site-header__bar">
-            <p class="brand"><a href="index.php">Sessie</a></p>
+            <p class="brand"><a href="index.php">D&D</a></p>
             <button type="button" class="site-nav-toggle" id="site-nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu openen">
                 <span class="site-nav-toggle__bar" aria-hidden="true"></span>
                 <span class="site-nav-toggle__bar" aria-hidden="true"></span>

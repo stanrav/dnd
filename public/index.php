@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-$pageTitle = 'Sessie — D&D Stats';
+$pageTitle = 'D&D Stats';
 $bodyId = 'page-play';
 require __DIR__ . '/../includes/partials/header.php';
 ?>
 
 <main>
-    <h1 class="page-title">Sessie</h1>
-
     <div id="play-char-shell" class="char-shell">
         <div class="char-tabs-wrap char-tabs-wrap--sticky">
             <div id="char-tabs" class="char-tabs" role="tablist" aria-label="Personages"></div>

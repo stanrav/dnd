@@ -1,7 +1,7 @@
 {
-    "name": "Sessie — D&D Stats",
-    "short_name": "Sessie",
-    "description": "D&D-sessie: stats bijhouden tijdens het spel.",
+    "name": "D&D Stats",
+    "short_name": "D&D Stats",
+    "description": "D&D Stats: stats bijhouden tijdens het spel.",
     "start_url": "index.php",
     "display": "standalone",
     "background_color": "#141210",

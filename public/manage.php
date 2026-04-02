@@ -18,8 +18,6 @@ require __DIR__ . '/../includes/partials/header.php';
         <a href="characters.php" class="char-picker__link">Personages beheren</a>
     </div>
 
-    <p class="page-intro">Geef elke stat een naam en een maximum. Huidige waarde start gelijk aan max. Kies meteen of short/long rest deze stat naar max zet. Onderaan kun je bestaande stats bewerken of verwijderen.</p>
-
     <form id="form-new-stat" class="form-stack">
         <label>
             Naam

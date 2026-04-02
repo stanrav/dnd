@@ -9,7 +9,6 @@ require __DIR__ . '/../includes/partials/header.php';
 
 <main>
     <h1 class="page-title">Personages</h1>
-    <p class="page-intro">Elk personage heeft een eigen naam en eigen stats. Op de sessiepagina wissel je met tabs of door te vegen.</p>
 
     <form id="form-new-character" class="form-stack">
         <label>
