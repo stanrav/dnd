@@ -48,8 +48,8 @@ a:hover {
 
 .site-header {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    flex-wrap: nowrap;
+    align-items: center;
     justify-content: space-between;
     gap: 0.75rem 1rem;
     padding: 0.75rem max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left));
@@ -58,7 +58,124 @@ a:hover {
     background: rgba(31, 28, 24, 0.92);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
+}
+
+.site-header__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.site-nav-toggle {
+    display: none;
+    flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: var(--tap-min);
+    height: var(--tap-min);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.site-nav-toggle:hover {
+    border-color: var(--accent-dim);
+    color: var(--accent);
+}
+
+.site-nav-toggle__bar {
+    display: block;
+    width: 1.3rem;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: transform 0.22s ease, opacity 0.2s ease;
+}
+
+.site-nav-toggle--open .site-nav-toggle__bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.site-nav-toggle--open .site-nav-toggle__bar:nth-child(2) {
+    opacity: 0;
+}
+
+.site-nav-toggle--open .site-nav-toggle__bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.site-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body.nav-open {
+    overflow: hidden;
+}
+
+@media (max-width: 719px) {
+    .site-header {
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+    }
+
+    .site-header__bar {
+        width: 100%;
+    }
+
+    .site-nav-toggle {
+        display: inline-flex;
+    }
+
+    .site-header .nav {
+        display: none;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        width: 100%;
+        gap: 0;
+        padding: 0.15rem 0 0.35rem;
+    }
+
+    body.nav-open .site-header .nav {
+        display: flex;
+    }
+
+    .site-header .nav a {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.85rem 0.5rem;
+        min-height: var(--tap-min);
+        border-radius: 6px;
+        border-bottom: 1px solid rgba(61, 52, 40, 0.65);
+        font-size: 1rem;
+    }
+
+    .site-header .nav a:last-child {
+        border-bottom: none;
+    }
+
+    .site-header .nav a:active {
+        background: rgba(201, 162, 39, 0.14);
+    }
 }
 
 .brand {
@@ -85,10 +202,19 @@ a:hover {
     width: 100%;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 720px) {
+    .site-header__bar {
+        display: contents;
+    }
+
+    .site-nav-toggle {
+        display: none !important;
+    }
+
     .nav {
         width: auto;
         gap: 0.75rem 1.25rem;
+        padding: 0;
     }
 }
 
@@ -133,12 +259,25 @@ main {
 }
 
 .char-shell {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .char-tabs-wrap {
     margin-bottom: 0.65rem;
-    overflow: hidden;
+}
+
+.char-tabs-wrap--sticky {
+    position: sticky;
+    z-index: 12;
+    top: calc(env(safe-area-inset-top, 0px) + 3.15rem);
+    margin-top: -0.15rem;
+    margin-bottom: 0.65rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.45rem;
+    background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(201, 162, 39, 0.12), transparent),
+        var(--bg);
+    box-shadow: 0 1px 0 var(--border);
 }
 
 .char-tabs {
@@ -316,6 +455,11 @@ main {
     grid-template-columns: 1fr 1fr;
     gap: 0.65rem;
     margin-bottom: 1.75rem;
+}
+
+.rest-row--play {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 @media (min-width: 400px) {
