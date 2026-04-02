@@ -1,0 +1,15 @@
+Gebruik deze prompt bij een afbeelding-AI (DALL·E, Midjourney, Ideogram, Firefly, enz.) om een favicon / app-icoon te maken voor de webapp "Sessie" (Nederlandse D&D-sessie-tool: stats bijhouden tijdens het spel).
+
+=== PROMPT (Engels, plak als één blok) ===
+
+App icon and favicon for a tabletop RPG session tracker web app named "Sessie". Square format, no rounded corners in the image file (corners stay square; the OS will mask them). Centered symbol only: a stylized twenty-sided die (d20) OR a bold letter "S" integrated with subtle dice geometry — pick one clear concept, not both competing. Style: premium, minimal, readable at 16px. Dark background #141210 to #1f1c18 subtle gradient or flat. Primary accent gold #c9a227 for lines and highlights; soft warm off-white #e8e0d4 for optional letterform. No text other than a single "S" if you use the letter. No photorealism, no clutter, no tiny details, no watermark, no border, no drop shadow that touches the edge. High contrast for small sizes. Flat or very light inner shading only.
+
+Deliver as PNG with transparent background OR solid dark background matching #141210 (both are acceptable). Zet in public/assets/icons/ met deze namen (zoals o.a. RealFaviconGenerator exporteert):
+- favicon.ico — multi-size ICO
+- favicon-16x16.png, favicon-32x32.png — browsertab
+- apple-touch-icon.png — 180×180 px (iOS / Safari "Zet op beginscherm")
+- android-chrome-192x192.png — PWA / Android
+- android-chrome-512x512.png — PWA / splash; houd belangrijk motief in centrale ~80% voor maskable
+
+=== CONTEXT VOOR JOU (ontwikkelaar) ===
+Kleuren en fonts van de site staan in public/assets/style.css (:root). includes/partials/header.php en public/site.webmanifest verwijzen naar bovenstaande bestandsnamen in public/assets/icons/.
