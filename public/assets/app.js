@@ -381,6 +381,11 @@
         let swipeStartX = 0;
         let swipeStartY = 0;
         let swipeTracking = false;
+        let swipeSuppressClickUntil = 0;
+
+        function armSwipeClickSuppress() {
+            swipeSuppressClickUntil = Date.now() + 450;
+        }
 
         function activeCharacterId() {
             const c = characters[activeIndex];
@@ -706,11 +711,11 @@
 
         function swipeFromDelta(dx, dy) {
             if (characters.length < 2) {
-                return;
+                return false;
             }
 
             if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy)) {
-                return;
+                return false;
             }
 
             if (dx > 0) {
@@ -718,7 +723,23 @@
             } else {
                 setActiveIndex(activeIndex + 1);
             }
+
+            return true;
         }
+
+        viewport.addEventListener(
+            'click',
+            function (e) {
+                if (Date.now() >= swipeSuppressClickUntil) {
+                    return;
+                }
+
+                swipeSuppressClickUntil = 0;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            },
+            true
+        );
 
         viewport.addEventListener(
             'touchstart',
@@ -727,13 +748,21 @@
                     return;
                 }
 
-                if (e.target.closest('button,a,input,textarea,label,.drag-handle')) {
+                if (e.target.closest('a,input,textarea,label')) {
                     return;
                 }
 
                 swipeTracking = true;
                 swipeStartX = e.touches[0].clientX;
                 swipeStartY = e.touches[0].clientY;
+            },
+            { passive: true }
+        );
+
+        viewport.addEventListener(
+            'touchcancel',
+            function () {
+                swipeTracking = false;
             },
             { passive: true }
         );
@@ -753,7 +782,10 @@
 
                 const dx = e.changedTouches[0].clientX - swipeStartX;
                 const dy = e.changedTouches[0].clientY - swipeStartY;
-                swipeFromDelta(dx, dy);
+
+                if (swipeFromDelta(dx, dy)) {
+                    armSwipeClickSuppress();
+                }
             },
             { passive: true }
         );
@@ -767,7 +799,7 @@
                 return;
             }
 
-            if (e.target.closest('button,a,input,textarea,label,.drag-handle')) {
+            if (e.target.closest('a,input,textarea,label')) {
                 return;
             }
 
@@ -784,7 +816,10 @@
             ptrDown = false;
             const dx = e.clientX - ptrStartX;
             const dy = e.clientY - ptrStartY;
-            swipeFromDelta(dx, dy);
+
+            if (swipeFromDelta(dx, dy)) {
+                armSwipeClickSuppress();
+            }
         });
 
         viewport.addEventListener('keydown', function (e) {

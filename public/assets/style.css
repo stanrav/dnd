@@ -752,7 +752,8 @@ main {
     min-width: 0;
     width: auto;
     min-height: 2.35rem;
-    font-size: 0.7rem;
+    font-size: 0.84rem;
+    line-height: 1.1;
     padding: 0.25rem 0.15rem;
 }
 
@@ -762,7 +763,8 @@ main {
     }
 
     .stat-card__actions .btn {
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
+        line-height: 1.1;
         padding: 0.3rem 0.25rem;
         min-height: var(--tap-min);
     }
@@ -770,7 +772,7 @@ main {
 
 @media (min-width: 640px) {
     .stat-card__actions .btn {
-        font-size: 0.875rem;
+        font-size: 1rem;
     }
 }
 
