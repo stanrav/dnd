@@ -29,8 +29,8 @@ $bodyId = $bodyId ?? '';
 <body<?= $bodyId !== '' ? ' id="' . htmlspecialchars($bodyId, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
     <header class="site-header">
         <div class="site-header__bar">
-            <a href="index.php">
-                <img src="assets/icons/apple-touch-icon.png" alt="" width="36" height="36" class="brand__logo" decoding="async">
+            <a href="index.php" style="width: 50px; height: 50px;">
+                <img src="assets/icons/apple-touch-icon.png" alt="" width="100%" height="100%" class="brand__logo" decoding="async">
             </a>
 
             <button type="button" class="site-nav-toggle" id="site-nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu openen">
