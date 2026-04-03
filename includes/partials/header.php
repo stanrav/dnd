@@ -29,7 +29,7 @@ $bodyId = $bodyId ?? '';
 <body<?= $bodyId !== '' ? ' id="' . htmlspecialchars($bodyId, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
     <header class="site-header">
         <div class="site-header__bar">
-            <a href="index.php" style="width: 70px; height: 70px;">
+            <a href="index.php" class="site-header__logo-link">
                 <img src="assets/icons/apple-touch-icon.png" alt="" width="100%" height="100%" class="brand__logo" decoding="async">
             </a>
 

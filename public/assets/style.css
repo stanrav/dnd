@@ -1,4 +1,6 @@
 :root {
+    /* Moet overeenkomen met .site-header__logo-link (balk + border-onder) */
+    --site-header-sticky-top: calc(env(safe-area-inset-top, 0px) + 4.375rem + 1px);
     --bg: #141210;
     --surface: #1f1c18;
     --border: #3d3428;
@@ -67,6 +69,13 @@ a:hover {
     gap: 0.75rem;
     flex: 0 0 auto;
     min-width: 0;
+}
+
+.site-header__logo-link {
+    display: block;
+    flex-shrink: 0;
+    width: 4.375rem;
+    height: 4.375rem;
 }
 
 .site-nav-toggle {
@@ -278,7 +287,7 @@ main {
 .char-tabs-wrap--sticky {
     position: sticky;
     z-index: 12;
-    top: calc(env(safe-area-inset-top, 0px) + 3.15rem);
+    top: var(--site-header-sticky-top);
     margin-top: -0.15rem;
     margin-bottom: 0.65rem;
     padding-top: 0.35rem;
