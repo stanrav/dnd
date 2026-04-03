@@ -35,16 +35,70 @@ if ($method === 'DELETE') {
 if ($method === 'POST') {
     $in = dnd_json_input();
     $id = (int) ($in['id'] ?? 0);
-    $name = trim((string) ($in['name'] ?? ''));
 
-    if ($id < 1 || $name === '') {
+    if ($id < 1) {
         dnd_json_response(['error' => 'Ongeldige aanvraag.'], 400);
     }
 
     dnd_assert_character_in_workspace($pdo, $id, $workspaceId);
 
-    $stmt = $pdo->prepare('UPDATE characters SET name = ? WHERE id = ? AND workspace_id = ?');
-    $stmt->execute([$name, $id, $workspaceId]);
+    $sets = [];
+    $params = [];
+
+    if (array_key_exists('name', $in)) {
+        $name = trim((string) $in['name']);
+
+        if ($name === '') {
+            dnd_json_response(['error' => 'Naam is verplicht.'], 400);
+        }
+
+        $sets[] = 'name = ?';
+        $params[] = $name;
+    }
+
+    if (array_key_exists('notes', $in)) {
+        $notes = (string) $in['notes'];
+        $len = function_exists('mb_strlen') ? mb_strlen($notes, 'UTF-8') : strlen($notes);
+
+        if ($len > 20000) {
+            dnd_json_response(['error' => 'Notities zijn te lang (max. 20000 tekens).'], 400);
+        }
+
+        $sets[] = 'notes = ?';
+        $params[] = $notes;
+    }
+
+    if (array_key_exists('currency_enabled', $in)) {
+        $sets[] = 'currency_enabled = ?';
+        $params[] = !empty($in['currency_enabled']) ? 1 : 0;
+    }
+
+    $coinCols = ['cp', 'sp', 'ep', 'gp', 'pp'];
+
+    foreach ($coinCols as $col) {
+        if (!array_key_exists($col, $in)) {
+            continue;
+        }
+
+        $v = (int) $in[$col];
+
+        if ($v < 0 || $v > 999999999) {
+            dnd_json_response(['error' => 'Ongeldige hoeveelheid muntstukken.'], 400);
+        }
+
+        $sets[] = $col . ' = ?';
+        $params[] = $v;
+    }
+
+    if ($sets === []) {
+        dnd_json_response(['error' => 'Geen velden om bij te werken.'], 400);
+    }
+
+    $params[] = $id;
+    $params[] = $workspaceId;
+    $sql = 'UPDATE characters SET ' . implode(', ', $sets) . ' WHERE id = ? AND workspace_id = ?';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     dnd_json_response(['ok' => true]);
 }
 

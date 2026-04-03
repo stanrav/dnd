@@ -392,6 +392,200 @@
             return c ? Number(c.id) : 0;
         }
 
+        function buildPlayCharacterMeta(c) {
+            const id = Number(c.id);
+            const meta = document.createElement('div');
+            meta.className = 'play-char-meta';
+            meta.dataset.characterId = String(id);
+
+            const showCurrency = !!Number(c.currency_enabled);
+            const coinKeys = ['cp', 'sp', 'ep', 'gp', 'pp'];
+            const coinLabels = {
+                cp: 'CP (koper)',
+                sp: 'SP (zilver)',
+                ep: 'EP (electrum)',
+                gp: 'GP (goud)',
+                pp: 'PP (platina)',
+            };
+            const inputsByCoin = {};
+
+            if (showCurrency) {
+                const curOuter = document.createElement('div');
+                curOuter.className = 'play-currency';
+                const fields = document.createElement('div');
+                fields.className = 'play-currency-fields';
+
+                coinKeys.forEach(function (key) {
+                    const lab = document.createElement('label');
+                    lab.className = 'play-currency-field';
+                    const spn = document.createElement('span');
+                    spn.className = 'play-currency-field__label';
+                    spn.textContent = coinLabels[key];
+                    const inp = document.createElement('input');
+                    inp.type = 'number';
+                    inp.min = '0';
+                    inp.step = '1';
+                    inp.dataset.coin = key;
+                    inp.inputMode = 'numeric';
+                    const raw = parseInt(String(c[key] != null ? c[key] : '0'), 10);
+                    inp.value = String(Number.isFinite(raw) && raw >= 0 ? raw : 0);
+                    lab.appendChild(spn);
+                    lab.appendChild(inp);
+                    fields.appendChild(lab);
+                    inputsByCoin[key] = inp;
+                });
+
+                curOuter.appendChild(fields);
+                meta.appendChild(curOuter);
+            }
+
+            const notesBlock = document.createElement('label');
+            notesBlock.className = 'play-notes-block';
+            const notesLabel = document.createElement('span');
+            notesLabel.className = 'play-notes-block__label';
+            notesLabel.textContent = 'Notities';
+            const ta = document.createElement('textarea');
+            ta.className = 'play-notes';
+            ta.rows = 4;
+            ta.setAttribute('aria-label', 'Notities voor dit personage');
+            ta.value = c.notes != null ? String(c.notes) : '';
+
+            notesBlock.appendChild(notesLabel);
+            notesBlock.appendChild(ta);
+            meta.appendChild(notesBlock);
+
+            function coinsFromDom() {
+                const coins = {};
+
+                coinKeys.forEach(function (key) {
+                    const inp = inputsByCoin[key];
+
+                    if (!inp) {
+                        return;
+                    }
+
+                    const v = parseInt(inp.value, 10);
+                    coins[key] = Number.isFinite(v) && v >= 0 ? v : 0;
+                });
+
+                return coins;
+            }
+
+            function snapFromDom() {
+                const payload = { notes: ta.value };
+
+                if (showCurrency) {
+                    payload.coins = coinsFromDom();
+                }
+
+                return JSON.stringify(payload);
+            }
+
+            function initialSnap() {
+                const payload = { notes: ta.value };
+
+                if (showCurrency) {
+                    const coins = {};
+
+                    coinKeys.forEach(function (key) {
+                        const v = parseInt(String(c[key] != null ? c[key] : 0), 10);
+                        coins[key] = Number.isFinite(v) && v >= 0 ? v : 0;
+                    });
+                    payload.coins = coins;
+                }
+
+                return JSON.stringify(payload);
+            }
+
+            meta._dndSnap = initialSnap();
+
+            let debounceTimer = null;
+
+            async function persistIfChanged() {
+                const next = snapFromDom();
+
+                if (next === meta._dndSnap) {
+                    return;
+                }
+
+                const o = JSON.parse(next);
+                const p = JSON.parse(meta._dndSnap);
+                const body = { id: id };
+
+                if (o.notes !== p.notes) {
+                    body.notes = o.notes;
+                }
+
+                if (showCurrency && o.coins && p.coins) {
+                    coinKeys.forEach(function (key) {
+                        if (o.coins[key] !== p.coins[key]) {
+                            body[key] = o.coins[key];
+                        }
+                    });
+                }
+
+                if (Object.keys(body).length === 1) {
+                    return;
+                }
+
+                try {
+                    await fetchJson(apiBase + 'character.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+                    meta._dndSnap = next;
+                } catch (e) {
+                    DndApp.toast(e.message, true);
+                }
+            }
+
+            function debouncedPersist() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () {
+                    debounceTimer = null;
+                    persistIfChanged();
+                }, 450);
+            }
+
+            ta.addEventListener('input', debouncedPersist);
+            ta.addEventListener('blur', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = null;
+                persistIfChanged();
+            });
+
+            if (showCurrency) {
+                coinKeys.forEach(function (key) {
+                    const inp = inputsByCoin[key];
+
+                    if (!inp) {
+                        return;
+                    }
+
+                    inp.addEventListener('input', debouncedPersist);
+                    inp.addEventListener('blur', function () {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = null;
+                        persistIfChanged();
+                    });
+                });
+            }
+
+            meta._dndPersist = persistIfChanged;
+
+            return meta;
+        }
+
+        async function flushPlayCharacterMeta() {
+            const metas = track.querySelectorAll('.play-char-meta');
+            const jobs = [...metas].map(function (m) {
+                return typeof m._dndPersist === 'function' ? m._dndPersist() : Promise.resolve();
+            });
+
+            await Promise.all(jobs);
+        }
+
         function setActiveIndex(next, opts) {
             const optsObj = opts || {};
             const n = characters.length;
@@ -505,6 +699,8 @@
         }
 
         async function loadAll() {
+            await flushPlayCharacterMeta();
+
             try {
                 characters = await getCharacters();
             } catch (e) {
@@ -571,6 +767,7 @@
                 grid.className = 'play-stats-grid';
                 grid.setAttribute('aria-live', 'polite');
                 panel.appendChild(grid);
+                panel.appendChild(buildPlayCharacterMeta(c));
                 track.appendChild(panel);
 
                 bindSortableContainer(grid, {
@@ -823,6 +1020,10 @@
         });
 
         viewport.addEventListener('keydown', function (e) {
+            if (e.target.closest('input,textarea,select,[contenteditable="true"]')) {
+                return;
+            }
+
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 setActiveIndex(activeIndex - 1);
@@ -1526,6 +1727,16 @@
                     inp.value = c.name;
                     inp.autocomplete = 'off';
                     lab.appendChild(inp);
+                    const curLab = document.createElement('label');
+                    curLab.className = 'form-check character-edit__currency';
+                    const curChk = document.createElement('input');
+                    curChk.type = 'checkbox';
+                    curChk.name = 'currency_enabled';
+                    curChk.checked = !!Number(c.currency_enabled);
+                    curLab.appendChild(curChk);
+                    curLab.appendChild(
+                        document.createTextNode(' Geld bijhouden (munten op de speelpagina)')
+                    );
                     const actions = document.createElement('div');
                     actions.className = 'character-edit__actions';
                     const btnSave = document.createElement('button');
@@ -1541,6 +1752,7 @@
                     actions.appendChild(btnSave);
                     actions.appendChild(btnCancel);
                     wrap.appendChild(lab);
+                    wrap.appendChild(curLab);
                     wrap.appendChild(actions);
                     row.appendChild(wrap);
                     list.appendChild(row);
@@ -1585,8 +1797,14 @@
                 return;
             }
 
+            const currencyChk = form.querySelector('[name="currency_enabled"]');
+            const currencyEnabled = currencyChk && currencyChk.checked;
+
             try {
-                await createCharacter({ name: name });
+                await createCharacter({
+                    name: name,
+                    currency_enabled: currencyEnabled,
+                });
                 form.reset();
                 DndApp.toast('Personage toegevoegd.');
                 await renderList();
@@ -1618,6 +1836,7 @@
                 const id = parseInt(saveBtn.getAttribute('data-save-character'), 10);
                 const row = saveBtn.closest('.character-row--edit');
                 const inp = row ? row.querySelector('input[type="text"]') : null;
+                const curChk = row ? row.querySelector('input[name="currency_enabled"]') : null;
 
                 if (!inp) {
                     return;
@@ -1630,8 +1849,14 @@
                     return;
                 }
 
+                const currencyEnabled = curChk && curChk.checked;
+
                 try {
-                    await updateCharacter({ id: id, name: name });
+                    await updateCharacter({
+                        id: id,
+                        name: name,
+                        currency_enabled: currencyEnabled,
+                    });
                     editingId = null;
                     DndApp.toast('Opgeslagen.');
                     await renderList();

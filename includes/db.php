@@ -44,9 +44,38 @@ SQL);
         dnd_migrate_stats_sort_order($pdo);
         dnd_migrate_characters($pdo);
         dnd_migrate_workspaces($pdo);
+        dnd_migrate_character_meta($pdo);
     }
 
     return $pdo;
+}
+
+function dnd_migrate_character_meta(PDO $pdo): void
+{
+    $adds = [
+        'notes' => "ALTER TABLE characters ADD COLUMN notes TEXT NOT NULL DEFAULT ''",
+        'currency_enabled' => 'ALTER TABLE characters ADD COLUMN currency_enabled INTEGER NOT NULL DEFAULT 0',
+        'cp' => 'ALTER TABLE characters ADD COLUMN cp INTEGER NOT NULL DEFAULT 0',
+        'sp' => 'ALTER TABLE characters ADD COLUMN sp INTEGER NOT NULL DEFAULT 0',
+        'ep' => 'ALTER TABLE characters ADD COLUMN ep INTEGER NOT NULL DEFAULT 0',
+        'gp' => 'ALTER TABLE characters ADD COLUMN gp INTEGER NOT NULL DEFAULT 0',
+        'pp' => 'ALTER TABLE characters ADD COLUMN pp INTEGER NOT NULL DEFAULT 0',
+    ];
+
+    foreach ($adds as $col => $sql) {
+        $has = false;
+
+        foreach ($pdo->query('PRAGMA table_info(characters)')->fetchAll(PDO::FETCH_ASSOC) as $info) {
+            if (($info['name'] ?? '') === $col) {
+                $has = true;
+                break;
+            }
+        }
+
+        if (!$has) {
+            $pdo->exec($sql);
+        }
+    }
 }
 
 function dnd_migrate_stats_sort_order(PDO $pdo): void

@@ -15,6 +15,10 @@ require __DIR__ . '/../includes/partials/header.php';
             Naam personage
             <input type="text" name="name" required maxlength="120" autocomplete="off" placeholder="bijv. Elara" inputmode="text">
         </label>
+        <label class="form-check">
+            <input type="checkbox" name="currency_enabled" value="1">
+            Geld bijhouden (munten op de speelpagina)
+        </label>
         <button type="submit" class="btn btn--primary btn--block">Personage toevoegen</button>
     </form>
 
