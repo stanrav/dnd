@@ -10,7 +10,7 @@ $workspaceId = dnd_require_workspace($pdo);
 
 if ($method === 'GET') {
     $stmt = $pdo->prepare(
-        'SELECT id, name, sort_order, notes, currency_enabled, cp, sp, ep, gp, pp
+        'SELECT id, name, sort_order, notes, currency_enabled, cp, sp, gp, pp
          FROM characters WHERE workspace_id = ? ORDER BY sort_order ASC, id ASC'
     );
     $stmt->execute([$workspaceId]);

@@ -368,6 +368,7 @@ main {
     box-sizing: border-box;
     width: 100%;
     min-height: 5.5rem;
+    max-height: min(50dvh, 18rem);
     padding: 0.55rem 0.65rem;
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -377,6 +378,16 @@ main {
     font-size: 0.9375rem;
     line-height: 1.45;
     resize: vertical;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y pinch-zoom;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .play-notes {
+        resize: none;
+    }
 }
 
 .play-currency {
@@ -908,8 +919,33 @@ main {
     color: var(--text);
 }
 
+.form-check-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.5rem;
+}
+
+.form-check-row .form-check {
+    margin-top: 0;
+}
+
+.form-check-row--split {
+    align-items: flex-end;
+    gap: 1rem;
+}
+
+.form-check-row--split .form-check-row__field {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.form-check-row--split .form-check {
+    flex-shrink: 0;
+}
+
 .form-check {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 0.65rem;
     margin-top: 0.65rem;
@@ -918,9 +954,6 @@ main {
     min-height: var(--tap-min);
 }
 
-.form-check:first-of-type {
-    margin-top: 0.35rem;
-}
 
 .form-check input {
     width: 1.25rem;

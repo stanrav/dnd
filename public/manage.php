@@ -29,14 +29,16 @@ require __DIR__ . '/../includes/partials/header.php';
         </label>
         <fieldset class="form-fieldset">
             <legend class="form-fieldset__legend">Reset naar max bij rust</legend>
-            <label class="form-check">
-                <input type="checkbox" name="reset_on_short" value="1">
-                <span>Short rest</span>
-            </label>
-            <label class="form-check">
-                <input type="checkbox" name="reset_on_long" value="1">
-                <span>Long rest</span>
-            </label>
+            <div class="form-check-row">
+                <label class="form-check">
+                    <input type="checkbox" name="reset_on_short" value="1">
+                    <span>Short rest</span>
+                </label>
+                <label class="form-check">
+                    <input type="checkbox" name="reset_on_long" value="1">
+                    <span>Long rest</span>
+                </label>
+            </div>
         </fieldset>
         <button type="submit" class="btn btn--primary btn--block">Toevoegen</button>
     </form>

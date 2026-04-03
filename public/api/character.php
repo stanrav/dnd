@@ -73,7 +73,7 @@ if ($method === 'POST') {
         $params[] = !empty($in['currency_enabled']) ? 1 : 0;
     }
 
-    $coinCols = ['cp', 'sp', 'ep', 'gp', 'pp'];
+    $coinCols = ['cp', 'sp', 'gp', 'pp'];
 
     foreach ($coinCols as $col) {
         if (!array_key_exists($col, $in)) {

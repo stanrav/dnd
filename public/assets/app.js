@@ -399,11 +399,10 @@
             meta.dataset.characterId = String(id);
 
             const showCurrency = !!Number(c.currency_enabled);
-            const coinKeys = ['cp', 'sp', 'ep', 'gp', 'pp'];
+            const coinKeys = ['cp', 'sp', 'gp', 'pp'];
             const coinLabels = {
                 cp: 'CP (koper)',
                 sp: 'SP (zilver)',
-                ep: 'EP (electrum)',
                 gp: 'GP (goud)',
                 pp: 'PP (platina)',
             };
@@ -945,7 +944,7 @@
                     return;
                 }
 
-                if (e.target.closest('a,input,textarea,label')) {
+                if (e.target.closest('a,input,textarea,label,.play-char-meta')) {
                     return;
                 }
 
@@ -996,7 +995,7 @@
                 return;
             }
 
-            if (e.target.closest('a,input,textarea,label')) {
+            if (e.target.closest('a,input,textarea,label,.play-char-meta')) {
                 return;
             }
 

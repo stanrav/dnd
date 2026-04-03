@@ -57,7 +57,6 @@ function dnd_migrate_character_meta(PDO $pdo): void
         'currency_enabled' => 'ALTER TABLE characters ADD COLUMN currency_enabled INTEGER NOT NULL DEFAULT 0',
         'cp' => 'ALTER TABLE characters ADD COLUMN cp INTEGER NOT NULL DEFAULT 0',
         'sp' => 'ALTER TABLE characters ADD COLUMN sp INTEGER NOT NULL DEFAULT 0',
-        'ep' => 'ALTER TABLE characters ADD COLUMN ep INTEGER NOT NULL DEFAULT 0',
         'gp' => 'ALTER TABLE characters ADD COLUMN gp INTEGER NOT NULL DEFAULT 0',
         'pp' => 'ALTER TABLE characters ADD COLUMN pp INTEGER NOT NULL DEFAULT 0',
     ];
